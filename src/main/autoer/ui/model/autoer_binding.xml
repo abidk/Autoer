@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<binding>
+	<format type="java.awt.Point"
+		serializer="autoer.ui.model.Format.serializePointString"
+		deserializer="autoer.ui.model.Format.deserializeStringPoint" />
+		
+	<format type="java.awt.Color"
+		serializer="autoer.ui.model.Format.serializeColorString"
+		deserializer="autoer.ui.model.Format.deserializeStringColor" />
+		
+		
+	<mapping name="StartAction" class="autoer.ui.actions.StartAction">
+		<value name="ProjectName" field="projectName" required="optional"/>
+		<collection field="actions"/>
+	</mapping>
+
+	<mapping name="Delay" class="autoer.ui.actions.Delay">
+		<value name="Delay" field="delay" usage="required" />
+		<value name="Description" field="description" usage="required" />
+	</mapping>
+
+	<mapping name="CheckColour" class="autoer.ui.actions.CheckColour">
+		<value name="Point" field="point" usage="required" />
+		<value name="Color" field="color" usage="required" />
+		<value name="Description" field="description" usage="required" />
+		<collection field="actions"/>
+	</mapping>
+
+	<mapping name="KeyPress" class="autoer.ui.actions.KeyPress">
+		<value name="Text" field="text" usage="required" />
+		<value name="Modifier" field="modifier" usage="required" />
+		<value name="Description" field="description" usage="required" />
+	</mapping>
+
+	<mapping name="MouseClick" class="autoer.ui.actions.MouseClick">
+		<value name="ButtonType" field="buttonType" usage="required" />
+		<value name="Description" field="description" usage="required" />
+	</mapping>
+
+	<mapping name="MouseMove" class="autoer.ui.actions.MouseMove">
+		<value name="EndPoint" field="endPoint" usage="required" />
+		<value name="Smooth" field="smooth" usage="required" />
+		<value name="Description" field="description" usage="required" />
+	</mapping>
+</binding>

@@ -1,0 +1,125 @@
+<project name="Autoer" default="jar" basedir=".">
+
+	<property name="src.dir" location="src" />
+	<property name="src.main.dir" location="${src.dir}\main" />
+	<property name="src.onejar.dir" location="${src.dir}/onejar" />
+	<property name="lib.dir" location="lib" />
+	<property name="build.dir" location="build" />
+	<property name="build.main.dir" location="${build.dir}\main" />
+	<property name="build.onejar.dir" location="${build.dir}\onejar" />
+	<property name="dist.dir" location="dist" />
+	<property name="dist.main.dir" location="dist\main" />
+	<property name="dist.lib.dir" location="dist\lib" />
+	<property name="jar.name" value="Autoer.jar" />
+	<property name="jar.name.ob" value="Autoer_ob.jar" />
+	<taskdef name="proguard" classname="proguard.ant.ProGuardTask" classpath="${lib.dir}/proguard.jar" />
+
+	<!-- JiBX binding compiler task definition -->
+	<taskdef name="bind" classname="org.jibx.binding.ant.CompileTask">
+		<classpath>
+			<pathelement location="${lib.dir}\jibx-bind.jar" />
+			<pathelement location="${lib.dir}\bcel.jar" />
+			<pathelement location="${lib.dir}\xpp3.jar" />
+		</classpath>
+	</taskdef>
+
+	<target name="clean">
+		<delete>
+			<fileset dir="${dist.dir}/" includes="**/*.jar" />
+		</delete>
+		<delete dir="${build.dir}" />
+	</target>
+
+	<target name="compile-onejar">
+		<mkdir dir="${build.onejar.dir}" />
+		<javac srcdir="${src.onejar.dir}" destdir="${build.onejar.dir}" debug="true">
+			<compilerarg value="-Xlint" />
+			<include name="**/*.java" />
+		</javac>
+	</target>
+
+	<target name="compile-main">
+		<mkdir dir="${build.main.dir}" />
+		<javac srcdir="${src.main.dir}" destdir="${build.main.dir}" debug="true">
+			<compilerarg value="-Xlint" />
+			<compilerarg value="-Xlint:-serial" />
+
+			<!-- add the jars to the classpah -->
+			<classpath>
+				<fileset dir="${lib.dir}">
+					<include name="**/*.jar" />
+				</fileset>
+			</classpath>
+			<include name="**/*.java" />
+		</javac>
+	</target>
+
+	<target name="compile" depends="clean, compile-main, compile-onejar">
+		<copy todir="${build.main.dir}">
+			<fileset dir="${src.main.dir}">
+				<!-- Copy forms to output dir -->
+				<include name="**/*.jfrm" />
+				<include name="**/*.png" />
+				<include name="**/*.xml" />
+			</fileset>
+		</copy>
+	</target>
+
+
+
+	<target name="bind" depends="compile">
+		<bind verbose="false" load="false" binding="${src.main.dir}\autoer\ui\model\autoer_binding.xml">
+			<classpathset dir="${build.main.dir}" />
+		</bind>
+	</target>
+
+	<target name="jar" depends="bind">
+		<!-- create temp folder -->
+		<mkdir dir="${dist.main.dir}" />
+		<mkdir dir="${dist.lib.dir}" />
+
+		<!-- Build the main jar -->
+		<jar jarfile="${dist.main.dir}/${jar.name}" manifest="${src.main.dir}/autoer/ui/MANIFEST.MF">
+			<fileset dir="${build.main.dir}">
+				<include name="autoer/ui/**/*.class" />
+				<include name="autoer/ui/**/*.jfrm" />
+				<include name="autoer/ui/**/*.png" />
+			</fileset>
+		</jar>
+		<!--
+		<proguard>
+  	-injars       ${dist.main.dir}\${jar.name};
+  	-outjars      ${dist.main.dir}\${jar.name.ob};
+  	-libraryjars  ${java.home}\lib\rt.jar;
+
+
+  	-keep public class * {
+  	    public static void main(java.lang.String[]);
+  	}
+  	
+    </proguard>
+-->
+		<!-- copy jar files into dist lib -->
+		<copy file="${lib.dir}/formsrt.jar" toFile="${dist.lib.dir}/formsrt.jar" />
+		<copy file="${lib.dir}/jibx-bind.jar" toFile="${dist.lib.dir}/jibx-bind.jar" />
+		<copy file="${lib.dir}/jibx-run.jar" toFile="${dist.lib.dir}/jibx-run.jar" />
+		
+		<!-- Create a single deliverable jar, containing the app and dependencies -->
+		<jar jarfile="${dist.dir}/${jar.name}" manifest="${src.onejar.dir}/com/simontuffs/onejar/MANIFEST.MF">
+			<fileset dir="${build.onejar.dir}">
+				<include name="**/*.class" />
+			</fileset>
+
+			<fileset dir="${dist.dir}">
+				<include name="main/${jar.name}" />
+				<include name="lib/formsrt.jar" />
+				<include name="lib/jibx-bind.jar" />
+				<include name="lib/jibx-run.jar" />
+			</fileset>
+		</jar>
+
+		<!-- delete the temp folders -->
+		<delete dir="${dist.main.dir}" />
+		<delete dir="${dist.lib.dir}" />
+	</target>
+</project>
